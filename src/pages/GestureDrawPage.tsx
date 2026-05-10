@@ -275,14 +275,20 @@ export default function GestureDrawPage() {
           }}
         >
           <WebcamFrame
-            isDrawingMode={isDrawingMode}
-            clearTrigger={clearTrigger}
-            onHandDetected={setHandDetected}
-            onPermissionChange={setPermission}
-            captureRef={captureRef}
-          />
-        </div>
-      </div>
+           <div
+  style={{
+    width: '100%',
+    height: '100%',
+  }}
+>
+  <WebcamFrame
+    isDrawingMode={isDrawingMode}
+    clearTrigger={clearTrigger}
+    onHandDetected={setHandDetected}
+    onPermissionChange={setPermission}
+    captureRef={captureRef}
+  />
+</div>
 
       {/* ───────────────── Instructions ───────────────── */}
 
