@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 
 interface ControlBarProps {
   onScreenshot: () => void;
-  onBgNext: () => void;
-  bgName: string;
   musicPlaying: boolean;
   onMusicToggle: () => void;
   onManualClear: () => void;
@@ -101,8 +99,6 @@ function IconBtn({
 
 export default function ControlBar({
   onScreenshot,
-  onBgNext,
-  bgName,
   musicPlaying,
   onMusicToggle,
   onManualClear,
@@ -126,14 +122,7 @@ export default function ControlBar({
         onClick={() => {}}
         title={`Camera: ${permission}`}
       >
-        {permission === 'granted' ? '📷' : permission === 'denied' ? '🚫' : '⏳'}
-      </IconBtn>
-
-      {/* Background cycle */}
-      <PillBtn onClick={onBgNext} title="Switch background">
-        🖼️ {bgName}
-      </PillBtn>
-
+  
       {/* Screenshot — accent */}
       <PillBtn onClick={onScreenshot} accent title="Save screenshot">
         📸 Save
