@@ -30,6 +30,24 @@ import InstructionCard   from '../components/InstructionCard';
 import ControlBar        from '../components/ControlBar';
 import { useKeyHeld }    from '../hooks/useKeyHeld';
 import { useMusic }      from '../hooks/useMusic';
+const BACKGROUNDS = [
+  {
+    name: "Dreamy",
+    video: "/backgrounds/bg1.mp4",
+  },
+  {
+    name: "Forest",
+    video: "/backgrounds/bg2.mp4",
+  },
+  {
+    name: "Stars",
+    video: "/backgrounds/bg3.mp4",
+  },
+  {
+    name: "Sunset",
+    video: "/backgrounds/bg4.mp4",
+  },
+];
 
 // ─── Background themes ────────────────────────────────────────────────────────
 /**
