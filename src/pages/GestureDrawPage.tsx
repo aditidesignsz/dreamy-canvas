@@ -1,211 +1,239 @@
 /**
- * GestureDrawPage — Main gesture drawing experience
+ * GestureDrawPage — root layout
+ * ─────────────────────────────────────────────────────────────────────────────
  *
- * Drawing sources (work simultaneously, whichever is active):
- *  A) Mouse moves over the webcam card while draw mode is on
- *  B) Index fingertip from hand tracking while draw mode is on
+ * REPLACE BACKGROUNDS:
+ *   Each entry in BACKGROUNDS can have either a `gradient` (CSS string used as
+ *   inline `background`) or an `image` (a URL/path). Export your Figma frames
+ *   as JPGs/PNGs to /public/backgrounds/ and swap the gradient strings for:
+ *     image: 'url(/backgrounds/cherry.jpg)'
+ *   The container already does `background-size: cover`.
  *
- * Draw mode activation:
- *  - D key held → draw on / D key released → draw off
- *  - DRAW button (toggle) → click once = on, click again = off
- *  - Both sources are OR-ed; D key overrides the toggle on release
+ * REPLACE STICKERS:
+ *   See src/components/FloatingStickers.tsx — change emoji or swap to <img> tags.
  *
- * Clear: open palm held 2 s → clear (no keyboard shortcut)
- * Save:  S key or Save button
+ * REPLACE MUSIC:
+ *   See src/hooks/useMusic.ts — change MUSIC_URL or drop a file in /public/music/.
+ *
+ * TWEAK UI COLORS:
+ *   The CSS variables at the bottom of this file drive button tints.
+ *   The glassmorphism intensity is controlled by the `backdropFilter` blur value
+ *   inside ControlBar.tsx and InstructionCard.tsx.
  */
-import { useRef, useState, useCallback, useEffect } from "react";
-import { Background, DEFAULT_BACKGROUNDS } from "../components/Background";
-import { WebcamCard } from "../components/WebcamCard";
-import { FloatingUI } from "../components/FloatingUI";
-import { useHandTracking, type TrackingState } from "../hooks/useHandTracking";
-import { useDrawing } from "../hooks/useDrawing";
 
+import { useState, useRef, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+
+import WebcamFrame       from '../components/WebcamFrame';
+import FloatingStickers  from '../components/FloatingStickers';
+import InstructionCard   from '../components/InstructionCard';
+import ControlBar        from '../components/ControlBar';
+import { useKeyHeld }    from '../hooks/useKeyHeld';
+import { useMusic }      from '../hooks/useMusic';
+
+// ─── Background themes ────────────────────────────────────────────────────────
+/**
+ * REPLACE BACKGROUNDS:
+ * Option A – keep CSS gradients (placeholders):
+ *   { id: 'cherry', name: '🌸 Cherry', style: 'linear-gradient(...)' }
+ *
+ * Option B – use your Figma exports placed in /public/backgrounds/:
+ *   { id: 'cherry', name: '🌸 Cherry', style: 'url(/backgrounds/cherry.jpg) center/cover no-repeat' }
+ */
+const BACKGROUNDS = [
+  {
+    id:    'cherry',
+    name:  '🌸 Cherry',
+    style: 'radial-gradient(ellipse at 30% 40%, #fecdd3 0%, #f9a8d4 30%, #e879f9 60%, #a78bfa 85%, #818cf8 100%)',
+  },
+  {
+    id:    'forest',
+    name:  '🌿 Forest',
+    style: 'radial-gradient(ellipse at 60% 30%, #bbf7d0 0%, #4ade80 25%, #16a34a 55%, #166534 80%, #052e16 100%)',
+  },
+  {
+    id:    'peach',
+    name:  '🍑 Peach',
+    style: 'radial-gradient(ellipse at 40% 60%, #fef9c3 0%, #fde68a 20%, #fca5a5 50%, #fb7185 75%, #f43f5e 100%)',
+  },
+  {
+    id:    'night',
+    name:  '🌙 Night',
+    style: 'radial-gradient(ellipse at 50% 20%, #312e81 0%, #1e1b4b 35%, #0f172a 65%, #020617 100%)',
+  },
+] as const;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function GestureDrawPage() {
-  const rootRef        = useRef<HTMLDivElement>(null);
-  const videoRef       = useRef<HTMLVideoElement>(null);
-  const canvasRef      = useRef<HTMLCanvasElement>(null);
-  const debugCanvasRef = useRef<HTMLCanvasElement>(null);
-  const cardRef        = useRef<HTMLDivElement>(null);
+  const [bgIndex,       setBgIndex]       = useState(0);
+  const [clearTrigger,  setClearTrigger]  = useState(0);
+  const [handDetected,  setHandDetected]  = useState(false);
+  const [permission,    setPermission]    = useState<'waiting' | 'granted' | 'denied'>('waiting');
 
-  // Background
-  const [bgIndex, setBgIndex] = useState(0);
-  const goNext = useCallback(() => setBgIndex((i) => (i + 1) % DEFAULT_BACKGROUNDS.length), []);
-  const goPrev = useCallback(() => setBgIndex((i) => (i - 1 + DEFAULT_BACKGROUNDS.length) % DEFAULT_BACKGROUNDS.length), []);
+  const isDrawingMode = useKeyHeld('d');
+  const { isPlaying: musicPlaying, toggle: toggleMusic } = useMusic();
+  const captureRef = useRef<(() => void) | null>(null);
 
-  const [debugMode, setDebugMode] = useState(false);
+  const handleBgNext     = () => setBgIndex(i => (i + 1) % BACKGROUNDS.length);
+  const handleScreenshot = () => captureRef.current?.();
+  const handleManualClear = useCallback(() => setClearTrigger(t => t + 1), []);
 
-  // Draw-mode: D key = hold-to-draw; button = toggle
-  const keyDrawRef    = useRef(false);   // true while D is physically held
-  const btnDrawRef    = useRef(false);   // true while button toggle is active
-  const isDrawingRef  = useRef(false);   // combined live value (no react render needed)
-  const [isDrawingUI, setIsDrawingUI] = useState(false);
-
-  const syncDrawing = useCallback(() => {
-    const active = keyDrawRef.current || btnDrawRef.current;
-    isDrawingRef.current = active;
-    setIsDrawingUI(active);
-  }, []);
-
-  const { updateDrawing, clearCanvas } = useDrawing({ canvasRef });
-
-  // ── Source A: Hand tracking ───────────────────────────────────────────────
-  const trackingState = useHandTracking({
-    videoRef,
-    onClear: clearCanvas,
-    onFrame: useCallback(
-      (state: TrackingState) => {
-        if (!state.fingertip || !isDrawingRef.current) return;
-        updateDrawing(true, state.fingertip.x, state.fingertip.y);
-      },
-      [updateDrawing]
-    ),
-  });
-
-  // ── Source B: Mouse / pointer on the webcam card ──────────────────────────
-  const handleCardPointerMove = useCallback((nx: number, ny: number) => {
-    if (!isDrawingRef.current) return;
-    updateDrawing(true, nx, ny);
-  }, [updateDrawing]);
-
-  // Commit/end the current stroke when pointer leaves the card
-  // (updateDrawing with isDrawing=false advances the stroke list)
-  const handleCardPointerLeave = useCallback(() => {
-    if (!isDrawingRef.current) return;
-    updateDrawing(false, 0, 0);
-  }, [updateDrawing]);
-
-  // ── Save ──────────────────────────────────────────────────────────────────
-  const handleSave = useCallback(async () => {
-    try {
-      const bg  = DEFAULT_BACKGROUNDS[bgIndex];
-      const W   = window.innerWidth;
-      const H   = window.innerHeight;
-      const off = document.createElement("canvas");
-      off.width = W; off.height = H;
-      const ctx = off.getContext("2d")!;
-
-      try {
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-          <foreignObject width="${W}" height="${H}">
-            <div xmlns="http://www.w3.org/1999/xhtml"
-              style="width:${W}px;height:${H}px;background:${bg.value.replace(/"/g, "'")}">
-            </div>
-          </foreignObject></svg>`;
-        const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-        await new Promise<void>((res) => {
-          const img = new Image();
-          img.onload  = () => { ctx.drawImage(img, 0, 0); res(); };
-          img.onerror = () => { ctx.fillStyle = bg.tint ?? "#2d0060"; ctx.fillRect(0,0,W,H); res(); };
-          img.src = url;
-        });
-        URL.revokeObjectURL(url);
-      } catch {
-        ctx.fillStyle = bg.tint ?? "#2d0060";
-        ctx.fillRect(0, 0, W, H);
-      }
-
-      if (videoRef.current && cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        const r    = 32;
-        ctx.save();
-        ctx.beginPath(); ctx.roundRect(rect.left, rect.top, rect.width, rect.height, r); ctx.clip();
-        ctx.translate(rect.left + rect.width, rect.top); ctx.scale(-1, 1);
-        ctx.drawImage(videoRef.current, 0, 0, rect.width, rect.height);
-        ctx.restore();
-
-        if (canvasRef.current) {
-          ctx.save();
-          ctx.beginPath(); ctx.roundRect(rect.left, rect.top, rect.width, rect.height, r); ctx.clip();
-          ctx.drawImage(canvasRef.current, rect.left, rect.top, rect.width, rect.height);
-          ctx.restore();
-        }
-        ctx.save();
-        ctx.beginPath(); ctx.roundRect(rect.left, rect.top, rect.width, rect.height, r);
-        ctx.strokeStyle = "rgba(200,150,255,0.25)"; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.restore();
-      }
-
-      ctx.save();
-      ctx.font = "bold 13px Quicksand,sans-serif";
-      ctx.fillStyle = "rgba(255,200,255,0.45)";
-      ctx.textAlign = "right";
-      ctx.fillText("✨ gesture draw", W - 16, H - 14);
-      ctx.restore();
-
-      const a = document.createElement("a");
-      a.href = off.toDataURL("image/png");
-      a.download = `gesture-memory-${Date.now()}.png`;
-      a.click();
-    } catch (err) { console.error("Save failed:", err); }
-  }, [bgIndex]);
-
-  // ── Keyboard: D = hold-to-draw (Caps Lock doesn't matter) ────────────────
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.repeat) return;
-    if (e.key.toLowerCase() === "d") { keyDrawRef.current = true;  syncDrawing(); }
-    if (e.key.toLowerCase() === "s") handleSave();
-  }, [syncDrawing, handleSave]);
-
-  const handleKeyUp = useCallback((e: React.KeyboardEvent) => {
-    if (e.key.toLowerCase() === "d") {
-      keyDrawRef.current = false;
-      // End the current stroke cleanly
-      updateDrawing(false, 0, 0);
-      syncDrawing();
-    }
-  }, [syncDrawing, updateDrawing]);
-
-  // ── Draw button: toggle ───────────────────────────────────────────────────
-  const handleToggleDraw = useCallback(() => {
-    btnDrawRef.current = !btnDrawRef.current;
-    if (!btnDrawRef.current) {
-      // Toggling off — end current stroke
-      updateDrawing(false, 0, 0);
-    }
-    syncDrawing();
-  }, [syncDrawing, updateDrawing]);
-
-  // Auto-focus root so D key works immediately
-  useEffect(() => { rootRef.current?.focus(); }, []);
+  const bg = BACKGROUNDS[bgIndex];
 
   return (
     <div
-      ref={rootRef}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
-      onClick={() => rootRef.current?.focus()}
-      className="fixed inset-0 flex items-center justify-center overflow-hidden select-none outline-none"
+      style={{
+        position:   'fixed',
+        inset:      0,
+        overflow:   'hidden',
+        display:    'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: "'Quicksand', sans-serif",
+      }}
     >
-      <div className="grain-overlay" aria-hidden />
+      {/* ── Background (smooth cross-fade) ── */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={bg.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.7, ease: 'easeInOut' }}
+          style={{
+            position:   'absolute',
+            inset:      0,
+            background: bg.style,
+          }}
+        />
+      </AnimatePresence>
 
-      <Background currentIndex={bgIndex} onPrev={goPrev} onNext={goNext} />
+      {/* ── Pixel-grid overlay — gives that cozy scrapbook texture ── */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset:    0,
+          backgroundImage: [
+            'linear-gradient(to right, rgba(255,255,255,0.055) 1px, transparent 1px)',
+            'linear-gradient(to bottom, rgba(255,255,255,0.055) 1px, transparent 1px)',
+          ].join(', '),
+          backgroundSize:  '20px 20px',
+          pointerEvents:   'none',
+          zIndex:          1,
+          mixBlendMode:    'overlay',
+        }}
+      />
 
-      <div className="relative flex items-center justify-center" style={{ zIndex: 20 }}>
-        <WebcamCard
-          ref={cardRef}
-          videoRef={videoRef}
-          canvasRef={canvasRef}
-          debugCanvasRef={debugCanvasRef}
-          debugMode={debugMode}
-          landmarks={trackingState.landmarks}
-          fingertipPos={trackingState.fingertip}
-          isDrawing={isDrawingUI}
-          clearProgress={trackingState.clearProgress}
-          onCardPointerMove={handleCardPointerMove}
-          onCardPointerLeave={handleCardPointerLeave}
+      {/* ── Vignette ── */}
+      <div
+        aria-hidden
+        style={{
+          position:    'absolute',
+          inset:       0,
+          background:  'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.28) 100%)',
+          pointerEvents: 'none',
+          zIndex:      1,
+        }}
+      />
+
+      {/* ── Main content layer ── */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex:   2,
+          /* Stickers overflow outside the webcam frame; allow it */
+          overflow: 'visible',
+        }}
+      >
+        {/* Stickers floated around the webcam frame */}
+        <FloatingStickers />
+
+        {/* Webcam + drawing engine */}
+        <WebcamFrame
+          isDrawingMode={isDrawingMode}
+          clearTrigger={clearTrigger}
+          onHandDetected={setHandDetected}
+          onPermissionChange={setPermission}
+          captureRef={captureRef}
         />
       </div>
 
-      <FloatingUI
-        debugMode={debugMode}
-        onToggleDebug={() => setDebugMode((d) => !d)}
-        onClear={clearCanvas}
-        onSave={handleSave}
-        trackingState={trackingState}
-        isDrawing={isDrawingUI}
-        handDetected={!!trackingState.fingertip}
-        onToggleDraw={handleToggleDraw}
+      {/* ── Instruction card (top-right iOS widget) ── */}
+      <InstructionCard
+        isDrawing={isDrawingMode}
+        handDetected={handDetected}
+        style={{
+          position: 'fixed',
+          top:      22,
+          right:    22,
+          zIndex:   10,
+        }}
+      />
+
+      {/* ── D-key active badge (top-center) ── */}
+      <AnimatePresence>
+        {isDrawingMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0,  scale: 1 }}
+            exit={{    opacity: 0, y: -6,  scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 18 }}
+            style={{
+              position:    'fixed',
+              top:         22,
+              left:        '50%',
+              transform:   'translateX(-50%)',
+              zIndex:      10,
+              padding:     '7px 18px',
+              borderRadius: 999,
+              background:  'rgba(255,255,255,0.22)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border:      '1px solid rgba(255,255,255,0.38)',
+              boxShadow:   '0 4px 16px rgba(0,0,0,0.18)',
+              fontFamily:  "'Quicksand', sans-serif",
+              fontSize:    13,
+              fontWeight:  700,
+              color:       'rgba(255,255,255,0.95)',
+              letterSpacing: '0.04em',
+              display:     'flex',
+              alignItems:  'center',
+              gap:         7,
+            }}
+          >
+            <motion.span
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 0.9, repeat: Infinity }}
+              style={{
+                display:      'inline-block',
+                width:        7,
+                height:       7,
+                borderRadius: '50%',
+                background:   '#fff',
+              }}
+            />
+            ✏️ Drawing mode
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Control bar (bottom-center) ── */}
+      <ControlBar
+        onScreenshot={handleScreenshot}
+        onBgNext={handleBgNext}
+        bgName={bg.name}
+        musicPlaying={musicPlaying}
+        onMusicToggle={toggleMusic}
+        onManualClear={handleManualClear}
+        permission={permission}
+        style={{
+          position:  'fixed',
+          bottom:    28,
+          left:      '50%',
+          transform: 'translateX(-50%)',
+          zIndex:    10,
+        }}
       />
     </div>
   );
