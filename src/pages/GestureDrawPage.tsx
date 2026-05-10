@@ -274,11 +274,10 @@ export default function GestureDrawPage() {
             WebkitBackdropFilter: 'blur(12px)',
           }}
         >
-          <WebcamFrame
-           <div
+        <div
   style={{
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    maxWidth: 720,
   }}
 >
   <WebcamFrame
@@ -289,7 +288,6 @@ export default function GestureDrawPage() {
     captureRef={captureRef}
   />
 </div>
-
       {/* ───────────────── Instructions ───────────────── */}
 
       <InstructionCard
