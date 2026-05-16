@@ -219,48 +219,6 @@ export default function GestureDrawPage() {
           cursor: 'grab',
         }}
       >
-        {/* ───────────────── DRAG ICON ───────────────── */}
-
-        <motion.div
-          animate={{
-            opacity: [0.6, 1, 0.6],
-          }}
-          transition={{
-            repeat: Infinity,
-            duration: 2,
-          }}
-          style={{
-            position: 'absolute',
-
-            top: 14,
-            right: 14,
-
-            zIndex: 50,
-
-            width: 42,
-            height: 42,
-
-            borderRadius: '50%',
-
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-
-            background:
-              'rgba(255,255,255,0.12)',
-
-            backdropFilter: 'blur(12px)',
-
-            color: 'white',
-
-            fontSize: 18,
-
-            border:
-              '1px solid rgba(255,255,255,0.15)',
-          }}
-        >
-          ✋
-        </motion.div>
 
         {/* ───────────────── LEFT BG BUTTON ───────────────── */}
 
@@ -338,48 +296,6 @@ export default function GestureDrawPage() {
           ›
         </button>
 
-        {/* ───────────────── CAMERA RESIZE ───────────────── */}
-
-        <div
-          style={{
-            position: 'absolute',
-
-            bottom: -76,
-
-            left: '50%',
-
-            transform:
-              'translateX(-50%)',
-
-            display: 'flex',
-
-            gap: 12,
-
-            zIndex: 40,
-          }}
-        >
-          <button
-            onClick={() =>
-              setCameraSize((prev) =>
-                Math.max(320, prev - 40)
-              )
-            }
-            style={resizeBtn}
-          >
-            −
-          </button>
-
-          <button
-            onClick={() =>
-              setCameraSize((prev) =>
-                Math.min(900, prev + 40)
-              )
-            }
-            style={resizeBtn}
-          >
-            +
-          </button>
-        </div>
 
         {/* ───────────────── CAMERA FRAME ───────────────── */}
 
@@ -552,10 +468,10 @@ export default function GestureDrawPage() {
 
           bottom: 28,
 
-          left: '50%',
-
-          transform:
-            'translateX(-50%)',
+          left: 0,
+right: 0,
+margin: '0 auto',
+width: 'fit-content',
 
           zIndex: 100,
         }}
