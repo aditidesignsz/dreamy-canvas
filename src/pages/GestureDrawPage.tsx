@@ -354,17 +354,16 @@ export default function GestureDrawPage() {
         isDrawing={isDrawingMode}
         handDetected={handDetected}
         style={{
-          position: 'fixed',
+  position: 'fixed',
 
-          top: 24,
+  top: 24,
 
-          left: '50%',
+  left: '50%',
 
-          transform:
-            'translateX(-50%)',
+  transform: 'translateX(-50%)',
 
-          zIndex: 20,
-        }}
+  zIndex: 50,
+}}
       />
 
       {/* DRAWING BADGE */}
