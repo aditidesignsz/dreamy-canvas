@@ -65,9 +65,6 @@ export default function GestureDrawPage() {
       'waiting' | 'granted' | 'denied'
     >('waiting');
 
-  const [cameraSize, setCameraSize] =
-    useState(560);
-
   /* ───────────────── REFS ───────────────── */
 
   const audioRef =
@@ -89,7 +86,7 @@ export default function GestureDrawPage() {
 
     audio.loop = true;
 
-    audio.volume = 0.16;
+    audio.volume = 0.15;
 
     audioRef.current = audio;
 
@@ -101,22 +98,24 @@ export default function GestureDrawPage() {
   /* ───────────────── FUNCTIONS ───────────────── */
 
   const toggleMusic = async () => {
-  if (!audioRef.current) return;
+    if (!audioRef.current) return;
 
-  try {
-    if (musicPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.volume = 0.15;
+    try {
+      if (musicPlaying) {
+        audioRef.current.pause();
+      } else {
+        await audioRef.current.play();
+      }
 
-      await audioRef.current.play();
+      setMusicPlaying(!musicPlaying);
+    } catch (err) {
+      console.log(
+        'Music playback blocked:',
+        err
+      );
     }
+  };
 
-    setMusicPlaying(!musicPlaying);
-  } catch (err) {
-    console.log('Music playback blocked:', err);
-  }
-};
   const handleScreenshot = () => {
     captureRef.current?.();
   };
@@ -151,6 +150,7 @@ export default function GestureDrawPage() {
       style={{
         position: 'fixed',
         inset: 0,
+
         overflow: 'hidden',
 
         display: 'flex',
@@ -194,79 +194,48 @@ export default function GestureDrawPage() {
           />
         </motion.video>
       </AnimatePresence>
+
       {/* GLOBAL LEFT BUTTON */}
 
-<button
-  onClick={previousBackground}
-  style={{
-    position: 'fixed',
+      <button
+        onClick={previousBackground}
+        style={{
+          ...circleBtn,
 
-    left: 30,
-    top: '50%',
+          position: 'fixed',
 
-    transform: 'translateY(-50%)',
+          left: 30,
+          top: '50%',
 
-    width: 68,
-    height: 68,
+          transform:
+            'translateY(-50%)',
 
-    borderRadius: '50%',
+          zIndex: 200,
+        }}
+      >
+        ‹
+      </button>
 
-    border:
-      '1px solid rgba(255,255,255,0.16)',
+      {/* GLOBAL RIGHT BUTTON */}
 
-    background:
-      'rgba(255,255,255,0.10)',
+      <button
+        onClick={nextBackground}
+        style={{
+          ...circleBtn,
 
-    backdropFilter: 'blur(18px)',
+          position: 'fixed',
 
-    color: 'white',
+          right: 30,
+          top: '50%',
 
-    fontSize: 34,
+          transform:
+            'translateY(-50%)',
 
-    cursor: 'pointer',
-
-    zIndex: 200,
-  }}
->
-  ‹
-</button>
-
-{/* GLOBAL RIGHT BUTTON */}
-
-<button
-  onClick={nextBackground}
-  style={{
-    position: 'fixed',
-
-    right: 30,
-    top: '50%',
-
-    transform: 'translateY(-50%)',
-
-    width: 68,
-    height: 68,
-
-    borderRadius: '50%',
-
-    border:
-      '1px solid rgba(255,255,255,0.16)',
-
-    background:
-      'rgba(255,255,255,0.10)',
-
-    backdropFilter: 'blur(18px)',
-
-    color: 'white',
-
-    fontSize: 34,
-
-    cursor: 'pointer',
-
-    zIndex: 200,
-  }}
->
-  ›
-</button>
+          zIndex: 200,
+        }}
+      >
+        ›
+      </button>
 
       {/* CAMERA WRAPPER */}
 
@@ -279,21 +248,14 @@ export default function GestureDrawPage() {
         style={{
           position: 'relative',
 
-          width: cameraSize,
-          height: cameraSize,
-
-          minWidth: 320,
-          minHeight: 320,
-
-          maxWidth: 900,
-          maxHeight: 900,
+          width: 500,
+          height: 360,
 
           zIndex: 20,
 
           cursor: 'grab',
         }}
       >
-
         {/* CAMERA FRAME */}
 
         <div
@@ -301,7 +263,7 @@ export default function GestureDrawPage() {
             width: '100%',
             height: '100%',
 
-            borderRadius: 38,
+            borderRadius: 28,
 
             overflow: 'hidden',
 
@@ -333,19 +295,20 @@ export default function GestureDrawPage() {
             captureRef={captureRef}
           />
 
-          {/* TOP RIGHT GLASS CONTROLS */}
+          {/* TOP RIGHT CONTROLS */}
 
           <div
             style={{
               position: 'absolute',
 
-              top: 18,
-              right: 18,
+              top: 16,
+              right: 16,
 
               display: 'flex',
-              gap: 12,
 
-              padding: '12px 14px',
+              gap: 10,
+
+              padding: '10px 12px',
 
               borderRadius: 999,
 
@@ -390,18 +353,18 @@ export default function GestureDrawPage() {
             </button>
           </div>
 
-          {/* BOTTOM LEFT INSTRUCTIONS */}
+          {/* BOTTOM LEFT INSTRUCTION */}
 
           <div
             style={{
               position: 'absolute',
 
-              bottom: 18,
-              left: 18,
+              bottom: 16,
+              left: 16,
 
-              padding: '14px 18px',
+              padding: '10px 16px',
 
-              borderRadius: 24,
+              borderRadius: 999,
 
               background:
                 'rgba(255,255,255,0.14)',
@@ -409,67 +372,24 @@ export default function GestureDrawPage() {
               backdropFilter:
                 'blur(18px)',
 
+              WebkitBackdropFilter:
+                'blur(18px)',
+
               border:
                 '1px solid rgba(255,255,255,0.2)',
 
               color: 'white',
 
-              fontSize: 16,
+              fontSize: 14,
 
               fontWeight: 700,
 
-              lineHeight: 1.6,
+              whiteSpace: 'nowrap',
 
               zIndex: 100,
             }}
           >
-            ✋ Raise hand
-            <br />
-            ✍ Hold D to draw
-          </div>
-
-          {/* CAMERA RESIZE */}
-
-          <div
-            style={{
-              position: 'absolute',
-
-              bottom: 18,
-              right: 18,
-
-              display: 'flex',
-              gap: 10,
-
-              zIndex: 100,
-            }}
-          >
-            <button
-              style={glassBtn}
-              onClick={() =>
-                setCameraSize((prev) =>
-                  Math.max(
-                    320,
-                    prev - 40
-                  )
-                )
-              }
-            >
-              −
-            </button>
-
-            <button
-              style={glassBtn}
-              onClick={() =>
-                setCameraSize((prev) =>
-                  Math.min(
-                    900,
-                    prev + 40
-                  )
-                )
-              }
-            >
-              +
-            </button>
+            ✋ Raise hand · Press D to draw
           </div>
         </div>
       </motion.div>
@@ -486,23 +406,26 @@ const circleBtn = {
   borderRadius: '50%',
 
   border:
-    '1px solid rgba(255,255,255,0.15)',
+    '1px solid rgba(255,255,255,0.16)',
 
   background:
     'rgba(255,255,255,0.10)',
 
   backdropFilter: 'blur(18px)',
 
+  WebkitBackdropFilter:
+    'blur(18px)',
+
   color: 'white',
 
-  fontSize: 32,
+  fontSize: 34,
 
   cursor: 'pointer',
 };
 
 const glassBtn = {
-  width: 52,
-  height: 52,
+  width: 46,
+  height: 46,
 
   borderRadius: '50%',
 
@@ -519,7 +442,7 @@ const glassBtn = {
 
   color: 'white',
 
-  fontSize: 22,
+  fontSize: 20,
 
   cursor: 'pointer',
 };
