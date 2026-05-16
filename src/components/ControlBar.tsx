@@ -184,7 +184,7 @@ export default function ControlBar({
         accent
         title="Save screenshot"
       >
-        📸 Save
+        📸 Capture
       </PillBtn>
 
       {/* MUSIC */}
