@@ -8,10 +8,9 @@ interface InstructionCardProps {
 }
 
 const STEPS = [
-  { icon: '✋', label: 'Show hand to camera' },
-  { icon: '⌨️', label: 'Hold  D  to draw' },
-  { icon: '🖐️', label: 'Open palm 2 s to clear' },
-  { icon: '📸', label: 'Press camera to save' },
+  { icon: '☝️', label: 'Raise index finger' },
+  { icon: '✍️', label: 'Hold  D  to draw' },
+  { icon: '🖐️', label: 'Open palm to clear' },
 ];
 
 export default function InstructionCard({ isDrawing, handDetected, style }: InstructionCardProps) {
