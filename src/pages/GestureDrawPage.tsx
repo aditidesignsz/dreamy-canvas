@@ -248,8 +248,8 @@ export default function GestureDrawPage() {
         style={{
           position: 'relative',
 
-          width: 500,
-          height: 360,
+          width: 600,
+          height: 460,
 
           zIndex: 20,
 
