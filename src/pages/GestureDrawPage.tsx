@@ -1,7 +1,6 @@
 /**
  * GestureDrawPage — dreamy gesture canvas
  */
-
 import {
   useState,
   useRef,
@@ -52,7 +51,7 @@ export default function GestureDrawPage() {
     useState(0);
 
   const [musicPlaying, setMusicPlaying] =
-    useState(false);
+    useState(true);
 
   const [clearTrigger, setClearTrigger] =
     useState(0);
@@ -80,20 +79,33 @@ export default function GestureDrawPage() {
   /* ───────────────── MUSIC ───────────────── */
 
   useEffect(() => {
-    const audio = new Audio(
-      '/music/lofi.mp3'
-    );
+  const audio = new Audio(
+    '/music/lofi.mp3'
+  );
 
-    audio.loop = true;
+  audio.loop = true;
 
-    audio.volume = 0.15;
+  audio.volume = 0.15;
 
-    audioRef.current = audio;
+  audioRef.current = audio;
 
-    return () => {
-      audio.pause();
-    };
-  }, []);
+  const playAudio = async () => {
+    try {
+      await audio.play();
+    } catch (err) {
+      console.log(
+        'Autoplay blocked:',
+        err
+      );
+    }
+  };
+
+  playAudio();
+
+  return () => {
+    audio.pause();
+  };
+}, []);
 
   /* ───────────────── FUNCTIONS ───────────────── */
 
