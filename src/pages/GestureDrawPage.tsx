@@ -2,15 +2,27 @@
  * GestureDrawPage — root layout
  */
 
-import { useState, useRef, useCallback } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+} from 'react';
+
+import {
+  AnimatePresence,
+  motion,
+} from 'framer-motion';
 
 import WebcamFrame from '../components/WebcamFrame';
 import InstructionCard from '../components/InstructionCard';
 import ControlBar from '../components/ControlBar';
 
 import { useKeyHeld } from '../hooks/useKeyHeld';
-import { useMusic } from '../hooks/useMusic';
+
+/* ──────────────────────────────────────────────────────────
+   BACKGROUND VIDEOS
+────────────────────────────────────────────────────────── */
 
 const BACKGROUNDS = [
   {
@@ -36,46 +48,96 @@ const BACKGROUNDS = [
 ];
 
 export default function GestureDrawPage() {
+  /* ───────────────── STATES ───────────────── */
+
   const [bgIndex, setBgIndex] = useState(0);
 
-  const [clearTrigger, setClearTrigger] = useState(0);
+  const [musicPlaying, setMusicPlaying] =
+    useState(false);
 
-  const [handDetected, setHandDetected] = useState(false);
+  const [clearTrigger, setClearTrigger] =
+    useState(0);
 
-  const [permission, setPermission] = useState<
-    'waiting' | 'granted' | 'denied'
-  >('waiting');
+  const [handDetected, setHandDetected] =
+    useState(false);
+
+  const [permission, setPermission] =
+    useState<
+      'waiting' | 'granted' | 'denied'
+    >('waiting');
+
+  /* ───────────────── REFS ───────────────── */
+
+  const audioRef =
+    useRef<HTMLAudioElement | null>(null);
+
+  const captureRef =
+    useRef<(() => void) | null>(null);
+
+  /* ───────────────── DRAW MODE ───────────────── */
 
   const isDrawingMode = useKeyHeld('d');
 
-  const {
-    isPlaying: musicPlaying,
-    toggle: toggleMusic,
-  } = useMusic();
+  /* ───────────────── MUSIC SETUP ───────────────── */
 
-  const captureRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const audio = new Audio(
+      '/music/lofi.mp3'
+    );
+
+    audio.loop = true;
+
+    audio.volume = 0.18;
+
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+    };
+  }, []);
+
+  /* ───────────────── FUNCTIONS ───────────────── */
+
+  const toggleMusic = async () => {
+    if (!audioRef.current) return;
+
+    if (musicPlaying) {
+      audioRef.current.pause();
+    } else {
+      await audioRef.current.play();
+    }
+
+    setMusicPlaying(!musicPlaying);
+  };
 
   const handleScreenshot = () => {
     captureRef.current?.();
   };
 
-  const handleManualClear = useCallback(() => {
-    setClearTrigger((prev) => prev + 1);
-  }, []);
+  const handleManualClear =
+    useCallback(() => {
+      setClearTrigger((prev) => prev + 1);
+    }, []);
 
   const nextBackground = () => {
     setBgIndex((prev) =>
-      prev === BACKGROUNDS.length - 1 ? 0 : prev + 1
+      prev === BACKGROUNDS.length - 1
+        ? 0
+        : prev + 1
     );
   };
 
   const previousBackground = () => {
     setBgIndex((prev) =>
-      prev === 0 ? BACKGROUNDS.length - 1 : prev - 1
+      prev === 0
+        ? BACKGROUNDS.length - 1
+        : prev - 1
     );
   };
 
   const bg = BACKGROUNDS[bgIndex];
+
+  /* ───────────────── UI ───────────────── */
 
   return (
     <div
@@ -89,9 +151,10 @@ export default function GestureDrawPage() {
         alignItems: 'center',
         justifyContent: 'center',
 
-        fontFamily: "'Quicksand', sans-serif",
-
         background: '#000',
+
+        fontFamily:
+          "'Quicksand', sans-serif",
       }}
     >
       {/* BACKGROUND VIDEO */}
@@ -120,7 +183,10 @@ export default function GestureDrawPage() {
             objectFit: 'cover',
           }}
         >
-          <source src={bg.video} type="video/mp4" />
+          <source
+            src={bg.video}
+            type="video/mp4"
+          />
         </motion.video>
       </AnimatePresence>
 
@@ -154,7 +220,8 @@ export default function GestureDrawPage() {
             left: -92,
             top: '50%',
 
-            transform: 'translateY(-50%)',
+            transform:
+              'translateY(-50%)',
 
             width: 68,
             height: 68,
@@ -168,7 +235,9 @@ export default function GestureDrawPage() {
               'rgba(255,255,255,0.08)',
 
             backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+
+            WebkitBackdropFilter:
+              'blur(20px)',
 
             display: 'flex',
             alignItems: 'center',
@@ -177,13 +246,10 @@ export default function GestureDrawPage() {
             color: 'white',
 
             fontSize: 34,
-            fontWeight: 300,
 
             cursor: 'pointer',
 
             zIndex: 20,
-
-            transition: '0.25s ease',
           }}
         >
           ‹
@@ -199,7 +265,8 @@ export default function GestureDrawPage() {
             right: -92,
             top: '50%',
 
-            transform: 'translateY(-50%)',
+            transform:
+              'translateY(-50%)',
 
             width: 68,
             height: 68,
@@ -213,7 +280,9 @@ export default function GestureDrawPage() {
               'rgba(255,255,255,0.08)',
 
             backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+
+            WebkitBackdropFilter:
+              'blur(20px)',
 
             display: 'flex',
             alignItems: 'center',
@@ -222,13 +291,10 @@ export default function GestureDrawPage() {
             color: 'white',
 
             fontSize: 34,
-            fontWeight: 300,
 
             cursor: 'pointer',
 
             zIndex: 20,
-
-            transition: '0.25s ease',
           }}
         >
           ›
@@ -254,7 +320,7 @@ export default function GestureDrawPage() {
               'rgba(255,255,255,0.04)',
 
             boxShadow:
-              '0 20px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
+              '0 20px 80px rgba(0,0,0,0.45)',
           }}
         >
           <div
@@ -264,10 +330,18 @@ export default function GestureDrawPage() {
             }}
           >
             <WebcamFrame
-              isDrawingMode={isDrawingMode}
-              clearTrigger={clearTrigger}
-              onHandDetected={setHandDetected}
-              onPermissionChange={setPermission}
+              isDrawingMode={
+                isDrawingMode
+              }
+              clearTrigger={
+                clearTrigger
+              }
+              onHandDetected={
+                setHandDetected
+              }
+              onPermissionChange={
+                setPermission
+              }
               captureRef={captureRef}
             />
           </div>
@@ -282,8 +356,12 @@ export default function GestureDrawPage() {
         style={{
           position: 'fixed',
 
-          top: 22,
-          right: 22,
+          top: 24,
+
+          left: '50%',
+
+          transform:
+            'translateX(-50%)',
 
           zIndex: 20,
         }}
@@ -317,21 +395,26 @@ export default function GestureDrawPage() {
             style={{
               position: 'fixed',
 
-              top: 22,
+              top: 84,
+
               left: '50%',
 
-              transform: 'translateX(-50%)',
+              transform:
+                'translateX(-50%)',
 
               zIndex: 20,
 
-              padding: '10px 18px',
+              padding:
+                '10px 18px',
 
               borderRadius: 999,
 
               background:
                 'rgba(255,255,255,0.12)',
 
-              backdropFilter: 'blur(18px)',
+              backdropFilter:
+                'blur(18px)',
+
               WebkitBackdropFilter:
                 'blur(18px)',
 
@@ -341,29 +424,41 @@ export default function GestureDrawPage() {
               color: 'white',
 
               fontSize: 13,
+
               fontWeight: 700,
-              letterSpacing: '0.04em',
+
+              letterSpacing:
+                '0.04em',
 
               display: 'flex',
+
               alignItems: 'center',
+
               gap: 8,
             }}
           >
             <motion.div
               animate={{
-                opacity: [1, 0.3, 1],
+                opacity: [
+                  1,
+                  0.3,
+                  1,
+                ],
               }}
               transition={{
                 duration: 1,
-                repeat: Infinity,
+                repeat:
+                  Infinity,
               }}
               style={{
                 width: 7,
                 height: 7,
 
-                borderRadius: '50%',
+                borderRadius:
+                  '50%',
 
-                background: 'white',
+                background:
+                  'white',
               }}
             />
 
@@ -375,20 +470,28 @@ export default function GestureDrawPage() {
       {/* BOTTOM CONTROLS */}
 
       <ControlBar
-        onScreenshot={handleScreenshot}
-        onBgNext={nextBackground}
-        bgName={bg.name}
-        musicPlaying={musicPlaying}
-        onMusicToggle={toggleMusic}
-        onManualClear={handleManualClear}
+        onScreenshot={
+          handleScreenshot
+        }
+        musicPlaying={
+          musicPlaying
+        }
+        onMusicToggle={
+          toggleMusic
+        }
+        onManualClear={
+          handleManualClear
+        }
         permission={permission}
         style={{
           position: 'fixed',
 
           bottom: 28,
+
           left: '50%',
 
-          transform: 'translateX(-50%)',
+          transform:
+            'translateX(-50%)',
 
           zIndex: 20,
         }}
