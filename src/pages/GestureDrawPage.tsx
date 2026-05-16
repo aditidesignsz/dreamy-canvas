@@ -15,8 +15,6 @@ import {
 } from 'framer-motion';
 
 import WebcamFrame from '../components/WebcamFrame';
-import InstructionCard from '../components/InstructionCard';
-import ControlBar from '../components/ControlBar';
 
 import { useKeyHeld } from '../hooks/useKeyHeld';
 
@@ -91,7 +89,7 @@ export default function GestureDrawPage() {
 
     audio.loop = true;
 
-    audio.volume = 0.18;
+    audio.volume = 0.16;
 
     audioRef.current = audio;
 
@@ -148,7 +146,6 @@ export default function GestureDrawPage() {
       style={{
         position: 'fixed',
         inset: 0,
-
         overflow: 'hidden',
 
         display: 'flex',
@@ -161,7 +158,7 @@ export default function GestureDrawPage() {
           "'Quicksand', sans-serif",
       }}
     >
-      {/* ───────────────── BACKGROUND VIDEO ───────────────── */}
+      {/* BACKGROUND VIDEO */}
 
       <AnimatePresence mode="wait">
         <motion.video
@@ -175,7 +172,6 @@ export default function GestureDrawPage() {
           exit={{ opacity: 0 }}
           transition={{
             duration: 0.7,
-            ease: 'easeInOut',
           }}
           style={{
             position: 'absolute',
@@ -194,7 +190,7 @@ export default function GestureDrawPage() {
         </motion.video>
       </AnimatePresence>
 
-      {/* ───────────────── MAIN CAMERA ───────────────── */}
+      {/* CAMERA WRAPPER */}
 
       <motion.div
         drag
@@ -205,8 +201,6 @@ export default function GestureDrawPage() {
         style={{
           position: 'relative',
 
-          zIndex: 10,
-
           width: cameraSize,
           height: cameraSize,
 
@@ -216,88 +210,52 @@ export default function GestureDrawPage() {
           maxWidth: 900,
           maxHeight: 900,
 
+          zIndex: 20,
+
           cursor: 'grab',
         }}
       >
-
-        {/* ───────────────── LEFT BG BUTTON ───────────────── */}
+        {/* LEFT BG BUTTON */}
 
         <button
           onClick={previousBackground}
           style={{
-            position: 'absolute',
+            ...circleBtn,
 
-            left: -84,
+            position: 'absolute',
+            left: -82,
             top: '50%',
 
             transform:
               'translateY(-50%)',
 
-            width: 64,
-            height: 64,
-
-            borderRadius: '50%',
-
-            border:
-              '1px solid rgba(255,255,255,0.15)',
-
-            background:
-              'rgba(255,255,255,0.10)',
-
-            backdropFilter: 'blur(18px)',
-
-            color: 'white',
-
-            fontSize: 32,
-
-            cursor: 'pointer',
-
-            zIndex: 30,
+            zIndex: 50,
           }}
         >
           ‹
         </button>
 
-        {/* ───────────────── RIGHT BG BUTTON ───────────────── */}
+        {/* RIGHT BG BUTTON */}
 
         <button
           onClick={nextBackground}
           style={{
-            position: 'absolute',
+            ...circleBtn,
 
-            right: -84,
+            position: 'absolute',
+            right: -82,
             top: '50%',
 
             transform:
               'translateY(-50%)',
 
-            width: 64,
-            height: 64,
-
-            borderRadius: '50%',
-
-            border:
-              '1px solid rgba(255,255,255,0.15)',
-
-            background:
-              'rgba(255,255,255,0.10)',
-
-            backdropFilter: 'blur(18px)',
-
-            color: 'white',
-
-            fontSize: 32,
-
-            cursor: 'pointer',
-
-            zIndex: 30,
+            zIndex: 50,
           }}
         >
           ›
         </button>
 
-
-        {/* ───────────────── CAMERA FRAME ───────────────── */}
+        {/* CAMERA FRAME */}
 
         <div
           style={{
@@ -335,67 +293,20 @@ export default function GestureDrawPage() {
             }
             captureRef={captureRef}
           />
-        </div>
-      </motion.div>
 
-      {/* ───────────────── TOP INSTRUCTIONS ───────────────── */}
+          {/* TOP RIGHT GLASS CONTROLS */}
 
-      <InstructionCard
-        isDrawing={isDrawingMode}
-        handDetected={handDetected}
-        style={{
-          position: 'fixed',
-
-          top: 22,
-
-          left: '50%',
-
-          transform:
-            'translateX(-50%)',
-
-          zIndex: 100,
-        }}
-      />
-
-      {/* ───────────────── DRAW MODE BADGE ───────────────── */}
-
-      <AnimatePresence>
-        {isDrawingMode && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: -10,
-              scale: 0.92,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-            }}
-            exit={{
-              opacity: 0,
-              y: -10,
-              scale: 0.92,
-            }}
-            transition={{
-              type: 'spring',
-              stiffness: 260,
-              damping: 18,
-            }}
+          <div
             style={{
-              position: 'fixed',
+              position: 'absolute',
 
-              top: 92,
+              top: 18,
+              right: 18,
 
-              left: '50%',
+              display: 'flex',
+              gap: 12,
 
-              transform:
-                'translateX(-50%)',
-
-              zIndex: 100,
-
-              padding:
-                '10px 18px',
+              padding: '12px 14px',
 
               borderRadius: 999,
 
@@ -405,100 +316,171 @@ export default function GestureDrawPage() {
               backdropFilter:
                 'blur(18px)',
 
+              WebkitBackdropFilter:
+                'blur(18px)',
+
               border:
-                '1px solid rgba(255,255,255,0.18)',
+                '1px solid rgba(255,255,255,0.2)',
+
+              zIndex: 100,
+            }}
+          >
+            <button
+              onClick={handleScreenshot}
+              style={glassBtn}
+            >
+              📸
+            </button>
+
+            <button
+              onClick={toggleMusic}
+              style={glassBtn}
+            >
+              {musicPlaying
+                ? '🔊'
+                : '🔇'}
+            </button>
+
+            <button
+              onClick={
+                handleManualClear
+              }
+              style={glassBtn}
+            >
+              🗑️
+            </button>
+          </div>
+
+          {/* BOTTOM LEFT INSTRUCTIONS */}
+
+          <div
+            style={{
+              position: 'absolute',
+
+              bottom: 18,
+              left: 18,
+
+              padding: '14px 18px',
+
+              borderRadius: 24,
+
+              background:
+                'rgba(255,255,255,0.14)',
+
+              backdropFilter:
+                'blur(18px)',
+
+              border:
+                '1px solid rgba(255,255,255,0.2)',
 
               color: 'white',
 
-              fontSize: 13,
+              fontSize: 16,
 
               fontWeight: 700,
 
-              display: 'flex',
+              lineHeight: 1.6,
 
-              alignItems: 'center',
-
-              gap: 8,
+              zIndex: 100,
             }}
           >
-            <motion.div
-              animate={{
-                opacity: [1, 0.3, 1],
-              }}
-              transition={{
-                duration: 1,
-                repeat:
-                  Infinity,
-              }}
-              style={{
-                width: 7,
-                height: 7,
+            ✋ Raise hand
+            <br />
+            ✍ Hold D to draw
+          </div>
 
-                borderRadius:
-                  '50%',
+          {/* CAMERA RESIZE */}
 
-                background:
-                  'white',
-              }}
-            />
+          <div
+            style={{
+              position: 'absolute',
 
-            ✏️ Drawing mode
-          </motion.div>
-        )}
-      </AnimatePresence>
+              bottom: 18,
+              right: 18,
 
-      {/* ───────────────── BOTTOM CONTROLS ───────────────── */}
+              display: 'flex',
+              gap: 10,
 
-      <ControlBar
-        onScreenshot={
-          handleScreenshot
-        }
-        musicPlaying={
-          musicPlaying
-        }
-        onMusicToggle={
-          toggleMusic
-        }
-        onManualClear={
-          handleManualClear
-        }
-        permission={permission}
-        style={{
-          position: 'fixed',
+              zIndex: 100,
+            }}
+          >
+            <button
+              style={glassBtn}
+              onClick={() =>
+                setCameraSize((prev) =>
+                  Math.max(
+                    320,
+                    prev - 40
+                  )
+                )
+              }
+            >
+              −
+            </button>
 
-          bottom: 28,
-
-          left: 0,
-right: 0,
-margin: '0 auto',
-width: 'fit-content',
-
-          zIndex: 100,
-        }}
-      />
+            <button
+              style={glassBtn}
+              onClick={() =>
+                setCameraSize((prev) =>
+                  Math.min(
+                    900,
+                    prev + 40
+                  )
+                )
+              }
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
 
-/* ───────────────── BUTTON STYLE ───────────────── */
+/* ───────────────── BUTTONS ───────────────── */
 
-const resizeBtn = {
+const circleBtn = {
+  width: 64,
+  height: 64,
+
+  borderRadius: '50%',
+
+  border:
+    '1px solid rgba(255,255,255,0.15)',
+
+  background:
+    'rgba(255,255,255,0.10)',
+
+  backdropFilter: 'blur(18px)',
+
+  color: 'white',
+
+  fontSize: 32,
+
+  cursor: 'pointer',
+};
+
+const glassBtn = {
   width: 52,
   height: 52,
 
   borderRadius: '50%',
 
   border:
-    '1px solid rgba(255,255,255,0.16)',
+    '1px solid rgba(255,255,255,0.2)',
 
   background:
-    'rgba(255,255,255,0.10)',
+    'rgba(255,255,255,0.12)',
 
-  backdropFilter: 'blur(16px)',
+  backdropFilter: 'blur(18px)',
+
+  WebkitBackdropFilter:
+    'blur(18px)',
 
   color: 'white',
 
-  fontSize: 28,
+  fontSize: 22,
 
   cursor: 'pointer',
-} as const;
+};
