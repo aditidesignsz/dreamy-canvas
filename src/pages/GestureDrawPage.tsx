@@ -12,17 +12,6 @@ import ControlBar from '../components/ControlBar';
 import { useKeyHeld } from '../hooks/useKeyHeld';
 import { useMusic } from '../hooks/useMusic';
 
-/* ──────────────────────────────────────────────────────────
-   BACKGROUND VIDEOS
-
-   Put your MP4s here:
-
-   public/backgrounds/bg1.mp4
-   public/backgrounds/bg2.mp4
-   public/backgrounds/bg3.mp4
-   public/backgrounds/bg4.mp4
-────────────────────────────────────────────────────────── */
-
 const BACKGROUNDS = [
   {
     id: 'dreamy',
@@ -59,7 +48,10 @@ export default function GestureDrawPage() {
 
   const isDrawingMode = useKeyHeld('d');
 
-  const { isPlaying: musicPlaying, toggle: toggleMusic } = useMusic();
+  const {
+    isPlaying: musicPlaying,
+    toggle: toggleMusic,
+  } = useMusic();
 
   const captureRef = useRef<(() => void) | null>(null);
 
@@ -102,7 +94,7 @@ export default function GestureDrawPage() {
         background: '#000',
       }}
     >
-      {/* ───────────────── Background Video ───────────────── */}
+      {/* BACKGROUND VIDEO */}
 
       <AnimatePresence mode="wait">
         <motion.video
@@ -132,23 +124,11 @@ export default function GestureDrawPage() {
         </motion.video>
       </AnimatePresence>
 
-      {/* ───────────────── Overlay ───────────────── */}
+      {/* MAIN CAMERA AREA */}
 
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-
-          background:
-            'linear-gradient(to bottom, rgba(0,0,0,0.08), rgba(0,0,0,0.32))',
-
-          zIndex: 1,
-        }}
-      />
-
-      {/* ───────────────── Main Camera Area ───────────────── */}
-
-      <div
+      <motion.div
+        drag
+        dragMomentum={false}
         style={{
           position: 'relative',
 
@@ -181,9 +161,11 @@ export default function GestureDrawPage() {
 
             borderRadius: '50%',
 
-            border: '1px solid rgba(255,255,255,0.18)',
+            border:
+              '1px solid rgba(255,255,255,0.18)',
 
-            background: 'rgba(255,255,255,0.08)',
+            background:
+              'rgba(255,255,255,0.08)',
 
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -224,9 +206,11 @@ export default function GestureDrawPage() {
 
             borderRadius: '50%',
 
-            border: '1px solid rgba(255,255,255,0.18)',
+            border:
+              '1px solid rgba(255,255,255,0.18)',
 
-            background: 'rgba(255,255,255,0.08)',
+            background:
+              'rgba(255,255,255,0.08)',
 
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -263,32 +247,34 @@ export default function GestureDrawPage() {
 
             position: 'relative',
 
-            border: '1px solid rgba(255,255,255,0.18)',
+            border:
+              '1px solid rgba(255,255,255,0.18)',
 
-            background: 'rgba(255,255,255,0.04)',
+            background:
+              'rgba(255,255,255,0.04)',
 
             boxShadow:
               '0 20px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
-
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
           }}
         >
-        <div
-  style={{
-    width: "100%",
-    maxWidth: 720,
-  }}
->
-  <WebcamFrame
-    isDrawingMode={isDrawingMode}
-    clearTrigger={clearTrigger}
-    onHandDetected={setHandDetected}
-    onPermissionChange={setPermission}
-    captureRef={captureRef}
-  />
-</div>
-      {/* ───────────────── Instructions ───────────────── */}
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <WebcamFrame
+              isDrawingMode={isDrawingMode}
+              clearTrigger={clearTrigger}
+              onHandDetected={setHandDetected}
+              onPermissionChange={setPermission}
+              captureRef={captureRef}
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* INSTRUCTIONS */}
 
       <InstructionCard
         isDrawing={isDrawingMode}
@@ -303,7 +289,7 @@ export default function GestureDrawPage() {
         }}
       />
 
-      {/* ───────────────── Drawing Badge ───────────────── */}
+      {/* DRAWING BADGE */}
 
       <AnimatePresence>
         {isDrawingMode && (
@@ -342,12 +328,15 @@ export default function GestureDrawPage() {
 
               borderRadius: 999,
 
-              background: 'rgba(255,255,255,0.12)',
+              background:
+                'rgba(255,255,255,0.12)',
 
               backdropFilter: 'blur(18px)',
-              WebkitBackdropFilter: 'blur(18px)',
+              WebkitBackdropFilter:
+                'blur(18px)',
 
-              border: '1px solid rgba(255,255,255,0.18)',
+              border:
+                '1px solid rgba(255,255,255,0.18)',
 
               color: 'white',
 
@@ -383,7 +372,7 @@ export default function GestureDrawPage() {
         )}
       </AnimatePresence>
 
-      {/* ───────────────── Bottom Controls ───────────────── */}
+      {/* BOTTOM CONTROLS */}
 
       <ControlBar
         onScreenshot={handleScreenshot}
@@ -405,3 +394,5 @@ export default function GestureDrawPage() {
         }}
       />
     </div>
+  );
+}
