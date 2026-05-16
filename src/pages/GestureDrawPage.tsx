@@ -268,10 +268,6 @@ export default function GestureDrawPage() {
   ›
 </button>
 
-{/* CAMERA WRAPPER */}
-
-<motion.div
-
       {/* CAMERA WRAPPER */}
 
       <motion.div
