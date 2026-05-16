@@ -405,5 +405,4 @@ export default function GestureDrawPage() {
         }}
       />
     </div>
-  );
-}
+
