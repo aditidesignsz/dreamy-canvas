@@ -154,14 +154,14 @@ export default function GestureDrawPage() {
 
           zIndex: 5,
 
-          width: '78vmin',
-          height: '78vmin',
+          width: '60vmin',
+          height: '60vmin',
 
-          maxWidth: 720,
-          maxHeight: 720,
+          maxWidth: 540,
+          maxHeight: 540,
 
-          minWidth: 320,
-          minHeight: 320,
+          minWidth: 300,
+          minHeight: 300,
         }}
       >
         {/* LEFT BUTTON */}
