@@ -408,5 +408,4 @@ export default function GestureDrawPage() {
            );
 }
 
-export default GestureDrawPage;
 
