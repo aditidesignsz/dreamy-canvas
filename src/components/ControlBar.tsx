@@ -10,7 +10,10 @@ interface ControlBarProps {
   style?: CSSProperties;
 }
 
-// ─── single pill button ─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// PILL BUTTON
+// ─────────────────────────────────────────────────────────
+
 function PillBtn({
   onClick,
   children,
@@ -26,31 +29,47 @@ function PillBtn({
     <motion.button
       onClick={onClick}
       title={title}
-      whileHover={{ scale: 1.06, y: -2 }}
+      whileHover={{ scale: 1.05, y: -2 }}
       whileTap={{ scale: 0.96 }}
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 7,
-        padding: accent ? '10px 22px' : '10px 18px',
+        justifyContent: 'center',
+
+        gap: 8,
+
+        padding: accent
+          ? '11px 22px'
+          : '11px 18px',
+
         borderRadius: 999,
+
         border: accent
-          ? '1px solid rgba(255,255,255,0.5)'
-          : '1px solid rgba(255,255,255,0.22)',
+          ? '1px solid rgba(255,255,255,0.42)'
+          : '1px solid rgba(255,255,255,0.18)',
+
         background: accent
-          ? 'rgba(255,255,255,0.32)'
-          : 'rgba(255,255,255,0.14)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: accent
-          ? '0 8px 28px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.5)'
-          : '0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25)',
+          ? 'rgba(255,255,255,0.24)'
+          : 'rgba(255,255,255,0.12)',
+
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+
+        boxShadow:
+          '0 8px 24px rgba(0,0,0,0.18)',
+
         cursor: 'pointer',
-        fontFamily: "'Quicksand', sans-serif",
+
+        fontFamily:
+          "'Quicksand', sans-serif",
+
         fontSize: 13,
-        fontWeight: 600,
-        color: 'rgba(255,255,255,0.95)',
+        fontWeight: 700,
+
+        color: 'white',
+
         whiteSpace: 'nowrap',
+
         userSelect: 'none',
       }}
     >
@@ -59,7 +78,10 @@ function PillBtn({
   );
 }
 
-// ─── icon-only round button ──────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// ICON BUTTON
+// ─────────────────────────────────────────────────────────
+
 function IconBtn({
   onClick,
   children,
@@ -73,22 +95,42 @@ function IconBtn({
     <motion.button
       onClick={onClick}
       title={title}
-      whileHover={{ scale: 1.1, y: -2 }}
-      whileTap={{ scale: 0.93 }}
+      whileHover={{
+        scale: 1.08,
+        y: -2,
+      }}
+      whileTap={{
+        scale: 0.93,
+      }}
       style={{
-        width: 46,
-        height: 46,
+        width: 48,
+        height: 48,
+
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 999,
-        border: '1px solid rgba(255,255,255,0.22)',
-        background: 'rgba(255,255,255,0.14)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25)',
+
+        borderRadius: '50%',
+
+        border:
+          '1px solid rgba(255,255,255,0.18)',
+
+        background:
+          'rgba(255,255,255,0.12)',
+
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter:
+          'blur(18px)',
+
+        boxShadow:
+          '0 8px 24px rgba(0,0,0,0.18)',
+
         cursor: 'pointer',
-        fontSize: 20,
+
+        color: 'white',
+
+        fontSize: 19,
+
         userSelect: 'none',
       }}
     >
@@ -97,44 +139,73 @@ function IconBtn({
   );
 }
 
+// ─────────────────────────────────────────────────────────
+// MAIN CONTROL BAR
+// ─────────────────────────────────────────────────────────
+
 export default function ControlBar({
   onScreenshot,
   musicPlaying,
   onMusicToggle,
   onManualClear,
-  permission,
   style,
 }: ControlBarProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5, type: 'spring', stiffness: 160, damping: 20 }}
+      initial={{
+        opacity: 0,
+        y: 24,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        delay: 0.4,
+        type: 'spring',
+        stiffness: 160,
+        damping: 18,
+      }}
       style={{
         ...style,
+
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
+
+        gap: 12,
+
+        zIndex: 50,
       }}
     >
-      {/* Camera permission badge */}
-      <IconBtn
-        onClick={() => {}}
-        title={`Camera: ${permission}`}
+      {/* SCREENSHOT */}
+
+      <PillBtn
+        onClick={onScreenshot}
+        accent
+        title="Save screenshot"
       >
-  
-      {/* Screenshot — accent */}
-      <PillBtn onClick={onScreenshot} accent title="Save screenshot">
         📸 Save
       </PillBtn>
 
-      {/* Music toggle */}
-      <PillBtn onClick={onMusicToggle} title={musicPlaying ? 'Pause music' : 'Play music'}>
-        {musicPlaying ? '🔊' : '🔇'} {musicPlaying ? 'Music on' : 'Music off'}
-      </PillBtn>
+      {/* MUSIC */}
 
-      {/* Manual clear */}
-      <IconBtn onClick={onManualClear} title="Clear canvas">
+      <IconBtn
+        onClick={onMusicToggle}
+        title={
+          musicPlaying
+            ? 'Mute music'
+            : 'Play music'
+        }
+      >
+        {musicPlaying ? '🔊' : '🔇'}
+      </IconBtn>
+
+      {/* CLEAR */}
+
+      <IconBtn
+        onClick={onManualClear}
+        title="Clear canvas"
+      >
         🗑️
       </IconBtn>
     </motion.div>
