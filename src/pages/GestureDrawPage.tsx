@@ -101,17 +101,22 @@ export default function GestureDrawPage() {
   /* ───────────────── FUNCTIONS ───────────────── */
 
   const toggleMusic = async () => {
-    if (!audioRef.current) return;
+  if (!audioRef.current) return;
 
+  try {
     if (musicPlaying) {
       audioRef.current.pause();
     } else {
+      audioRef.current.volume = 0.15;
+
       await audioRef.current.play();
     }
 
     setMusicPlaying(!musicPlaying);
-  };
-
+  } catch (err) {
+    console.log('Music playback blocked:', err);
+  }
+};
   const handleScreenshot = () => {
     captureRef.current?.();
   };
@@ -189,6 +194,83 @@ export default function GestureDrawPage() {
           />
         </motion.video>
       </AnimatePresence>
+      {/* GLOBAL LEFT BUTTON */}
+
+<button
+  onClick={previousBackground}
+  style={{
+    position: 'fixed',
+
+    left: 30,
+    top: '50%',
+
+    transform: 'translateY(-50%)',
+
+    width: 68,
+    height: 68,
+
+    borderRadius: '50%',
+
+    border:
+      '1px solid rgba(255,255,255,0.16)',
+
+    background:
+      'rgba(255,255,255,0.10)',
+
+    backdropFilter: 'blur(18px)',
+
+    color: 'white',
+
+    fontSize: 34,
+
+    cursor: 'pointer',
+
+    zIndex: 200,
+  }}
+>
+  ‹
+</button>
+
+{/* GLOBAL RIGHT BUTTON */}
+
+<button
+  onClick={nextBackground}
+  style={{
+    position: 'fixed',
+
+    right: 30,
+    top: '50%',
+
+    transform: 'translateY(-50%)',
+
+    width: 68,
+    height: 68,
+
+    borderRadius: '50%',
+
+    border:
+      '1px solid rgba(255,255,255,0.16)',
+
+    background:
+      'rgba(255,255,255,0.10)',
+
+    backdropFilter: 'blur(18px)',
+
+    color: 'white',
+
+    fontSize: 34,
+
+    cursor: 'pointer',
+
+    zIndex: 200,
+  }}
+>
+  ›
+</button>
+
+{/* CAMERA WRAPPER */}
+
+<motion.div
 
       {/* CAMERA WRAPPER */}
 
@@ -215,45 +297,6 @@ export default function GestureDrawPage() {
           cursor: 'grab',
         }}
       >
-        {/* LEFT BG BUTTON */}
-
-        <button
-          onClick={previousBackground}
-          style={{
-            ...circleBtn,
-
-            position: 'absolute',
-            left: -82,
-            top: '50%',
-
-            transform:
-              'translateY(-50%)',
-
-            zIndex: 50,
-          }}
-        >
-          ‹
-        </button>
-
-        {/* RIGHT BG BUTTON */}
-
-        <button
-          onClick={nextBackground}
-          style={{
-            ...circleBtn,
-
-            position: 'absolute',
-            right: -82,
-            top: '50%',
-
-            transform:
-              'translateY(-50%)',
-
-            zIndex: 50,
-          }}
-        >
-          ›
-        </button>
 
         {/* CAMERA FRAME */}
 
