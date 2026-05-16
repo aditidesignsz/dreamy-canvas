@@ -1,5 +1,5 @@
 /**
- * GestureDrawPage — root layout
+ * GestureDrawPage — dreamy gesture canvas
  */
 
 import {
@@ -20,9 +20,9 @@ import ControlBar from '../components/ControlBar';
 
 import { useKeyHeld } from '../hooks/useKeyHeld';
 
-/* ──────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────
    BACKGROUND VIDEOS
-────────────────────────────────────────────────────────── */
+──────────────────────────────────────────────── */
 
 const BACKGROUNDS = [
   {
@@ -50,7 +50,8 @@ const BACKGROUNDS = [
 export default function GestureDrawPage() {
   /* ───────────────── STATES ───────────────── */
 
-  const [bgIndex, setBgIndex] = useState(0);
+  const [bgIndex, setBgIndex] =
+    useState(0);
 
   const [musicPlaying, setMusicPlaying] =
     useState(false);
@@ -66,6 +67,9 @@ export default function GestureDrawPage() {
       'waiting' | 'granted' | 'denied'
     >('waiting');
 
+  const [cameraSize, setCameraSize] =
+    useState(560);
+
   /* ───────────────── REFS ───────────────── */
 
   const audioRef =
@@ -78,7 +82,7 @@ export default function GestureDrawPage() {
 
   const isDrawingMode = useKeyHeld('d');
 
-  /* ───────────────── MUSIC SETUP ───────────────── */
+  /* ───────────────── MUSIC ───────────────── */
 
   useEffect(() => {
     const audio = new Audio(
@@ -157,7 +161,7 @@ export default function GestureDrawPage() {
           "'Quicksand', sans-serif",
       }}
     >
-      {/* BACKGROUND VIDEO */}
+      {/* ───────────────── BACKGROUND VIDEO ───────────────── */}
 
       <AnimatePresence mode="wait">
         <motion.video
@@ -190,183 +194,254 @@ export default function GestureDrawPage() {
         </motion.video>
       </AnimatePresence>
 
-      {/* MAIN CAMERA AREA */}
+      {/* ───────────────── MAIN CAMERA ───────────────── */}
 
       <motion.div
         drag
         dragMomentum={false}
+        whileTap={{
+          cursor: 'grabbing',
+        }}
         style={{
           position: 'relative',
 
-          zIndex: 5,
+          zIndex: 10,
 
-          width: '60vmin',
-          height: '60vmin',
+          width: cameraSize,
+          height: cameraSize,
 
-          maxWidth: 540,
-          maxHeight: 540,
+          minWidth: 320,
+          minHeight: 320,
 
-          minWidth: 300,
-          minHeight: 300,
+          maxWidth: 900,
+          maxHeight: 900,
+
+          cursor: 'grab',
         }}
       >
-        {/* LEFT BUTTON */}
+        {/* ───────────────── DRAG ICON ───────────────── */}
+
+        <motion.div
+          animate={{
+            opacity: [0.6, 1, 0.6],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 2,
+          }}
+          style={{
+            position: 'absolute',
+
+            top: 14,
+            right: 14,
+
+            zIndex: 50,
+
+            width: 42,
+            height: 42,
+
+            borderRadius: '50%',
+
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            background:
+              'rgba(255,255,255,0.12)',
+
+            backdropFilter: 'blur(12px)',
+
+            color: 'white',
+
+            fontSize: 18,
+
+            border:
+              '1px solid rgba(255,255,255,0.15)',
+          }}
+        >
+          ✋
+        </motion.div>
+
+        {/* ───────────────── LEFT BG BUTTON ───────────────── */}
 
         <button
           onClick={previousBackground}
           style={{
             position: 'absolute',
 
-            left: -92,
+            left: -84,
             top: '50%',
 
             transform:
               'translateY(-50%)',
 
-            width: 68,
-            height: 68,
+            width: 64,
+            height: 64,
 
             borderRadius: '50%',
 
             border:
-              '1px solid rgba(255,255,255,0.18)',
+              '1px solid rgba(255,255,255,0.15)',
 
             background:
-              'rgba(255,255,255,0.08)',
+              'rgba(255,255,255,0.10)',
 
-            backdropFilter: 'blur(20px)',
-
-            WebkitBackdropFilter:
-              'blur(20px)',
-
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backdropFilter: 'blur(18px)',
 
             color: 'white',
 
-            fontSize: 34,
+            fontSize: 32,
 
             cursor: 'pointer',
 
-            zIndex: 20,
+            zIndex: 30,
           }}
         >
           ‹
         </button>
 
-        {/* RIGHT BUTTON */}
+        {/* ───────────────── RIGHT BG BUTTON ───────────────── */}
 
         <button
           onClick={nextBackground}
           style={{
             position: 'absolute',
 
-            right: -92,
+            right: -84,
             top: '50%',
 
             transform:
               'translateY(-50%)',
 
-            width: 68,
-            height: 68,
+            width: 64,
+            height: 64,
 
             borderRadius: '50%',
 
             border:
-              '1px solid rgba(255,255,255,0.18)',
+              '1px solid rgba(255,255,255,0.15)',
 
             background:
-              'rgba(255,255,255,0.08)',
+              'rgba(255,255,255,0.10)',
 
-            backdropFilter: 'blur(20px)',
-
-            WebkitBackdropFilter:
-              'blur(20px)',
-
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backdropFilter: 'blur(18px)',
 
             color: 'white',
 
-            fontSize: 34,
+            fontSize: 32,
 
             cursor: 'pointer',
 
-            zIndex: 20,
+            zIndex: 30,
           }}
         >
           ›
         </button>
 
-        {/* CAMERA FRAME */}
+        {/* ───────────────── CAMERA RESIZE ───────────────── */}
+
+        <div
+          style={{
+            position: 'absolute',
+
+            bottom: -76,
+
+            left: '50%',
+
+            transform:
+              'translateX(-50%)',
+
+            display: 'flex',
+
+            gap: 12,
+
+            zIndex: 40,
+          }}
+        >
+          <button
+            onClick={() =>
+              setCameraSize((prev) =>
+                Math.max(320, prev - 40)
+              )
+            }
+            style={resizeBtn}
+          >
+            −
+          </button>
+
+          <button
+            onClick={() =>
+              setCameraSize((prev) =>
+                Math.min(900, prev + 40)
+              )
+            }
+            style={resizeBtn}
+          >
+            +
+          </button>
+        </div>
+
+        {/* ───────────────── CAMERA FRAME ───────────────── */}
 
         <div
           style={{
             width: '100%',
             height: '100%',
 
-            borderRadius: 36,
+            borderRadius: 38,
 
             overflow: 'hidden',
 
             position: 'relative',
 
             border:
-              '1px solid rgba(255,255,255,0.18)',
+              '1px solid rgba(255,255,255,0.15)',
 
             background:
-              'rgba(255,255,255,0.04)',
+              'rgba(255,255,255,0.03)',
 
             boxShadow:
               '0 20px 80px rgba(0,0,0,0.45)',
           }}
         >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <WebcamFrame
-              isDrawingMode={
-                isDrawingMode
-              }
-              clearTrigger={
-                clearTrigger
-              }
-              onHandDetected={
-                setHandDetected
-              }
-              onPermissionChange={
-                setPermission
-              }
-              captureRef={captureRef}
-            />
-          </div>
+          <WebcamFrame
+            isDrawingMode={
+              isDrawingMode
+            }
+            clearTrigger={
+              clearTrigger
+            }
+            onHandDetected={
+              setHandDetected
+            }
+            onPermissionChange={
+              setPermission
+            }
+            captureRef={captureRef}
+          />
         </div>
       </motion.div>
 
-      {/* INSTRUCTIONS */}
+      {/* ───────────────── TOP INSTRUCTIONS ───────────────── */}
 
       <InstructionCard
         isDrawing={isDrawingMode}
         handDetected={handDetected}
         style={{
-  position: 'fixed',
+          position: 'fixed',
 
-  top: 24,
+          top: 22,
 
-  left: '50%',
+          left: '50%',
 
-  transform: 'translateX(-50%)',
+          transform:
+            'translateX(-50%)',
 
-  zIndex: 50,
-}}
+          zIndex: 100,
+        }}
       />
 
-      {/* DRAWING BADGE */}
+      {/* ───────────────── DRAW MODE BADGE ───────────────── */}
 
       <AnimatePresence>
         {isDrawingMode && (
@@ -394,14 +469,14 @@ export default function GestureDrawPage() {
             style={{
               position: 'fixed',
 
-              top: 84,
+              top: 92,
 
               left: '50%',
 
               transform:
                 'translateX(-50%)',
 
-              zIndex: 20,
+              zIndex: 100,
 
               padding:
                 '10px 18px',
@@ -414,9 +489,6 @@ export default function GestureDrawPage() {
               backdropFilter:
                 'blur(18px)',
 
-              WebkitBackdropFilter:
-                'blur(18px)',
-
               border:
                 '1px solid rgba(255,255,255,0.18)',
 
@@ -425,9 +497,6 @@ export default function GestureDrawPage() {
               fontSize: 13,
 
               fontWeight: 700,
-
-              letterSpacing:
-                '0.04em',
 
               display: 'flex',
 
@@ -438,11 +507,7 @@ export default function GestureDrawPage() {
           >
             <motion.div
               animate={{
-                opacity: [
-                  1,
-                  0.3,
-                  1,
-                ],
+                opacity: [1, 0.3, 1],
               }}
               transition={{
                 duration: 1,
@@ -466,7 +531,7 @@ export default function GestureDrawPage() {
         )}
       </AnimatePresence>
 
-      {/* BOTTOM CONTROLS */}
+      {/* ───────────────── BOTTOM CONTROLS ───────────────── */}
 
       <ControlBar
         onScreenshot={
@@ -492,9 +557,32 @@ export default function GestureDrawPage() {
           transform:
             'translateX(-50%)',
 
-          zIndex: 20,
+          zIndex: 100,
         }}
       />
     </div>
   );
 }
+
+/* ───────────────── BUTTON STYLE ───────────────── */
+
+const resizeBtn = {
+  width: 52,
+  height: 52,
+
+  borderRadius: '50%',
+
+  border:
+    '1px solid rgba(255,255,255,0.16)',
+
+  background:
+    'rgba(255,255,255,0.10)',
+
+  backdropFilter: 'blur(16px)',
+
+  color: 'white',
+
+  fontSize: 28,
+
+  cursor: 'pointer',
+} as const;
